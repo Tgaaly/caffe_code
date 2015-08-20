@@ -3,6 +3,43 @@
 ## Python API
 feature_extraction.py -- python API for caffe
 
+## Create loss layer in Caffe
+
+1. Create the implementation in caffe/src/ (example seen below)
+2. Add the class declaration to caffe/include/loss_layers.hpp
+
+```
+template <typename Dtype>
+class TareksLossLayer : public LossLayer<Dtype> {
+ public:
+  explicit TareksLossLayer(const LayerParameter& param)
+      : LossLayer<Dtype>(param), diff_() {}
+  virtual void Reshape(const vector<Blob<Dtype>*>& bottom,
+      const vector<Blob<Dtype>*>& top);
+
+  virtual inline const char* type() const { return "TareksLoss"; }
+  /**
+   * Unlike most loss layers, in the TareksLossLayer we can backpropagate
+   * to both inputs -- override to return true and always allow force_backward.
+   */
+  virtual inline bool AllowForceBackward(const int bottom_index) const {
+    return true;
+  }
+
+ protected:
+  virtual void Forward_cpu(const vector<Blob<Dtype>*>& bottom,
+      const vector<Blob<Dtype>*>& top);
+  virtual void Forward_gpu(const vector<Blob<Dtype>*>& bottom,
+      const vector<Blob<Dtype>*>& top);
+  virtual void Backward_cpu(const vector<Blob<Dtype>*>& top,
+      const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom);
+  virtual void Backward_gpu(const vector<Blob<Dtype>*>& top,
+      const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom);
+
+  Blob<Dtype> diff_;
+};
+```
+
 ## C++ API
 
 ---
