@@ -104,6 +104,27 @@ REGISTER_LAYER_CLASS(TareksLoss);
 
 and then from caffe_root directory execute "make all"
 
+To use add it in the prototxt:
+```
+layer {
+  name: "loss"
+  type: "TareksLoss"
+  bottom: "decode1neuron"
+  bottom: "flatdata"
+  top: "l2_error"
+  loss_weight: 0
+}
+```
+
+
+To run example, navigate to caffe_root and execute, for example: 
+
+```
+cd $CAFFE_ROOT
+./examples/mnist/train_lenet.sh
+```
+
+Test out by calling ```./build/tools/caffe train --solver=examples/mnist/mnist_autoencoder_solver.prototxt``` in train_lenet.sh
 
 ## C++ API
 
