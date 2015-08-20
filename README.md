@@ -102,6 +102,9 @@ REGISTER_LAYER_CLASS(TareksLoss);
 }  // namespace caffe
 ```
 
+and then from caffe_root directory execute "make all"
+
+
 ## C++ API
 
 ---
