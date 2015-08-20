@@ -72,7 +72,7 @@ void TareksLossLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
       diff_.mutable_cpu_data());
   Dtype dot = caffe_cpu_dot(count, diff_.cpu_data(), diff_.cpu_data());
   Dtype loss = dot / bottom[0]->num() / Dtype(2);
-  top[0]->mutable_cpu_data()[0] = loss*2;
+  top[0]->mutable_cpu_data()[0] = loss*2; //multiplied by 2 here (after copying from EuclideanLossLayer)
 }
 
 template <typename Dtype>
