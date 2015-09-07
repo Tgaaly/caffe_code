@@ -48,9 +48,13 @@ transformer.set_transpose('data', (2,0,1))
 transformer.set_mean('data', np.load(caffe_root + 'python/caffe/imagenet/ilsvrc_2012_mean.npy').mean(1).mean(1)) # mean pixel
 transformer.set_raw_scale('data', 255)  # the reference model operates on images in [0,255] range instead of [0,1]
 transformer.set_channel_swap('data', (2,1,0))  # the reference model has channels in BGR order instead of RGB
+#print sys.argv[0]
+print sys.argv[1]
+#print sys.argv[2]
+#print sys.argv[3]
 
 net.blobs['data'].reshape(1,3,227,227)
-filename ='mug5.jpg';
+filename =  sys.argv[1]# 'mug5.jpg' #sys.argv[1] #'mug5.jpg';
 net.blobs['data'].data[...] = transformer.preprocess('data', caffe.io.load_image(caffe_root + 'examples/images/' + filename))
 out = net.forward()
 print("Predicted class is #{}.".format(out['prob'].argmax()))
@@ -76,6 +80,9 @@ for k, v in net.params.items():
 	
 plt.bar(range(4096), net.blobs['fc7'].data.transpose())
 
+plt.bar(range(4096), net.blobs['fc7'].data.transpose())
+
+
 # plt.imshow(transformer.deprocess('data', net.blobs['data'].data[0]))
 
 
@@ -87,6 +94,43 @@ plt.bar(range(4096), net.blobs['fc7'].data.transpose())
 # filters = net.params['conv1'][0].data
 # vis_square(filters.transpose(0, 2, 3, 1))
 
+#plt.show()
+
+# the parameters are a list of [weights, biases]
+filters = net.params['conv1'][0].data
+vis_square(filters.transpose(0, 2, 3, 1))
 plt.show()
 
 
+feat = net.blobs['conv1'].data[0, :36]
+vis_square(feat, padval=1)
+
+filters = net.params['conv2'][0].data
+vis_square(filters[:48].reshape(48**2, 5, 5))
+
+feat = net.blobs['conv4'].data[0]
+vis_square(feat, padval=0.5)
+
+# feat = net.blobs['fc6'].data[0]
+# plt.subplot(2, 1, 1)
+# plt.plot(feat.flat)
+# plt.subplot(2, 1, 2)
+# _ = plt.hist(feat.flat[feat.flat > 0], bins=100)
+
+
+# take an array of shape (n, height, width) or (n, height, width, channels)
+# and visualize each (height, width) thing in a grid of size approx. sqrt(n) by sqrt(n)
+def vis_square(data, padsize=1, padval=0):
+    data -= data.min()
+    data /= data.max()
+    
+    # force the number of filters to be square
+    n = int(np.ceil(np.sqrt(data.shape[0])))
+    padding = ((0, n ** 2 - data.shape[0]), (0, padsize), (0, padsize)) + ((0, 0),) * (data.ndim - 3)
+    data = np.pad(data, padding, mode='constant', constant_values=(padval, padval))
+    
+    # tile the filters into an image
+    data = data.reshape((n, n) + data.shape[1:]).transpose((0, 2, 1, 3) + tuple(range(4, data.ndim + 1)))
+    data = data.reshape((n * data.shape[1], n * data.shape[3]) + data.shape[4:])
+    
+    plt.imshow(data)
